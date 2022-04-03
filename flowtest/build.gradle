@@ -1,0 +1,63 @@
+plugins {
+    id 'java-library'
+    id 'org.jetbrains.kotlin.jvm'
+    id 'maven-publish'
+}
+
+java {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+}
+
+dependencies {
+
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.1"
+
+    implementation "com.github.jitpack:gradle-simple:1.0"
+}
+
+static def getVersion() {
+    def props = new Properties()
+    new File("./version.properties").withInputStream { props.load(it) }
+    return props.getProperty("VERSION")
+}
+
+afterEvaluate {
+    publishing {
+        def versionLib = getVersion()
+        def dirName = projectDir.name
+        publications {
+            release(MavenPublication) {
+                from components.kotlin
+                groupId = "com.sugarspoon.flowtest"
+                artifactId projectDir.name
+                version = versionLib
+                println("Version: $versionLib")
+                println("DirName: $dirName")
+            }
+        }
+    }
+}
+
+task applyRules {
+    task cleanLibsModule {
+        dependsOn 'clean'
+    }
+    task buildLibsModule {
+        dependsOn 'build'
+    }
+    task publishLibsModule {
+        dependsOn 'publish'
+    }
+    task publishLibsModuleLocal {
+        dependsOn 'publishToMavenLocal'
+    }
+}
+
+task comps {
+    afterEvaluate {
+        println("Components: " + components*.name)
+        println("RootDir: " + rootDir)
+    }
+}
